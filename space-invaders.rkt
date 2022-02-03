@@ -112,16 +112,16 @@
 
 
 ;; ListOfInvader is one of:
-;; - false
+;; - empty
 ;; - (cons invader ListOfInvader)
 ;; interp. a list of all invaders in play
-(define LOI0 false)
+(define LOI0 empty)
 (define LOI1 (cons I1 empty))
 (define LOI3 (list I1 I2 I3))
 
 #;
 (define (fn-for-loi loi)
-  (cond [(false? loi) (...)]
+  (cond [(empty? loi) (...)]
         [else
          (fn-for-invader (first loi)
                          (fn-for-loi (rest loi)))]))
@@ -135,16 +135,16 @@
 
 
 ;; ListOfMisile is one of:
-;; - false
+;; - empty
 ;; - (cons missile ListOfMissile)
 ;; interp. a list of all missiles in play
 
-(define LOM0 false)
+(define LOM0 empty)
 (define LOM1 (list M1 M2 M3))
 
 #;
 (define (fn-for-lom lom)
-  (cond [(false? lom) (...)]
+  (cond [(empty? lom) (...)]
         [else
          (fn-for-missile (first lom)
                          (fn-for-lom (rest lom)))]))
@@ -219,7 +219,7 @@
 
 ;; Template from ListOfInvaders
 (define (advance-invaders loi)
-  (cond [(false? loi) LOI1]
+  (cond [(empty? loi) empty]
         [else
          (cons (move-invader (first loi))
                          (advance-invaders (rest loi)))]))
