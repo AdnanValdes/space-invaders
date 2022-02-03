@@ -189,7 +189,7 @@
 
 ;; Template from game
 (define (update-game s)
-  (make-game (advance-invaders (spawn-invaders (game-invaders s)))
+  (make-game (kill-invaders (game-missiles s) (advance-invaders (spawn-invaders (game-invaders s))))
              (advance-missiles (game-missiles s))
              (move-tank (game-tank s))))
 
@@ -317,6 +317,56 @@
 
 (define (move-missile m)
   (make-missile (missile-x m) (- (missile-y m) MISSILE-SPEED)))
+
+
+;; ======================================================
+;; Kill Invaders
+;; ======================================================
+
+;; ListOfMissiles ListOfInvaders -> ListOfInvaders
+;; given a list of missiles and a list of invaders, remove invaders and missiles that collide
+(check-expect (kill-invaders empty empty) empty)
+(check-expect (kill-invaders LOI3 empty) LOI3)
+(check-expect (kill-invaders empty LOM1) empty)
+(check-expect (kill-invaders (list (make-invader 150 100 1)) (list (make-missile 150 100))) empty) ; Exact hit on single invader
+
+#;
+(define (kill-invaders loi lom) loi)
+
+;; CROSS PRODUCT OF TYPE COMMENTS TABLE
+;;
+;;                                     loi
+;;                           empty           (cons invader LOI)                
+;;                                        |
+;; l   empty                              |  LOI
+;; o                         --  empty  -----------------
+;; m  (cons missile LOM)                  |  (and <firsts are at (x,y)?>
+;;                                        |       <rests are at (x,y)?>)
+
+(define (kill-invaders loi lom)
+  (cond [(empty? loi) empty]
+        [(empty? lom) loi]
+        [else
+         (if (hit-invader? (first loi) lom)
+             (rest loi)
+             (cons (first loi) (kill-invaders (rest loi) lom)))]))
+
+
+;; Invader ListOfMissile -> Bool
+;; produce true if Invader is within hit box of a missile
+(check-expect (hit-invader? (make-invader 150 100 1) (list (make-missile 150 100))) true)
+(check-expect (hit-invader? I1 (list M1 M4 M5)) false)
+
+#;
+(define (hit-invader? i lom) false)
+
+(define (hit-invader? invader lom)
+  (cond [(empty? lom) false] 
+        [else
+          (if (and (< (- (invader-x invader) HIT-RANGE) (missile-x (first lom)) (+ (invader-x invader) HIT-RANGE))
+                   (< (- (invader-y invader) HIT-RANGE) (missile-y (first lom)) (+ (invader-y invader) HIT-RANGE)))
+                true
+                (hit-invader? invader (rest lom)))]))
 
 
 
