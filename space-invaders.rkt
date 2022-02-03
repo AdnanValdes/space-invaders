@@ -98,6 +98,9 @@
 (define M1 (make-missile 150 300))                       ;not hit U1
 (define M2 (make-missile (invader-x I1) (+ (invader-y I1) 10)))  ;exactly hit U1
 (define M3 (make-missile (invader-x I1) (+ (invader-y I1)  5)))  ;> hit U1
+(define M4 (make-missile 100 TANK-HEIGHT/2))
+(define M5 (make-missile 300 HEIGHT))
+
 
 #;
 (define (fn-for-missile m)
@@ -291,9 +294,30 @@
 ;; ListOfMissiles -> ListOfMissiles
 ;; advance every missile in ListOfMissiles by subtracting MISSILE-SPEED from (missile-y)
 (check-expect (advance-missiles empty) empty)
-(check-expect (advance-missiles (list M1)) (list (make-missile (missile-x M1) (- (missile-x M1) MISSILE-SPEED))))
-
+(check-expect (advance-missiles (list M1)) (list (make-missile (missile-x M1) (- (missile-y M1) MISSILE-SPEED))))
+(check-expect (advance-missiles (list M1 M4 M5)) (list (make-missile (missile-x M1) (- (missile-y M1) MISSILE-SPEED))
+                                                       (make-missile (missile-x M4) (- (missile-y M4) MISSILE-SPEED)) 
+                                                       (make-missile (missile-x M5) (- (missile-y M5) MISSILE-SPEED))))
+#;
 (define (advance-missiles m) LOM0)
+
+
+(define (advance-missiles lom)
+  (cond [(empty? lom) empty]
+        [else
+         (cons (move-missile (first lom))
+                         (advance-missiles (rest lom)))]))
+
+;; Missile -> Missile
+;; advance a single missile by MISSILE-SPEED
+
+#;
+(define (move-missile m) M1)
+
+
+(define (move-missile m)
+  (make-missile (missile-x m) (- (missile-y m) MISSILE-SPEED)))
+
 
 
 ;; Tank -> Tank
