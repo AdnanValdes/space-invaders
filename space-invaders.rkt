@@ -180,20 +180,13 @@
 
 ;; Game -> Game
 ;; advance alien, missile, and tank positions by changing ListOfInvaders and ListOfMissiles
-(check-expect (update-game (make-game empty empty T0)) ; Empty world with tank in center going right
-              (make-game LOI1 empty (make-tank (+ (tank-x T0) TANK-SPEED) 1)))
-
-(check-expect (update-game G2)
-              (make-game (list (make-invader (+ (invader-x I1) INVADER-X-SPEED) (+ (invader-y I1) INVADER-Y-SPEED) 1))
-                         (list (make-missile 150 (- (missile-y M1) MISSILE-SPEED)))
-                         T1))
 
 #;
 (define (update-game s) 0)
 
 ;; Template from game
 (define (update-game s)
-  (make-game (advance-invaders (game-invaders s))
+  (make-game (advance-invaders (spawn-invaders (game-invaders s)))
              (advance-missiles (game-missiles s))
              (move-tank (game-tank s))))
 
@@ -203,15 +196,15 @@
 
 ;; ListOfInvaders -> ListOfInvaders
 ;; advance every invader in ListOfInvaders along x axis by INVADER-X-SPEED and along y axis by INVADER-Y-SPEED
-(check-expect (advance-invaders empty) LOI1)
+(check-expect (advance-invaders empty) empty)
 (check-expect (advance-invaders (list I1)) (list
                                             (make-invader (+ (invader-x I1) INVADER-X-SPEED) (+ (invader-y I1) INVADER-Y-SPEED) 1)))
 
 (check-expect (advance-invaders (list I1 (make-invader 150 200 -1))) (list
                                                                       (make-invader (+ (invader-x I1) INVADER-X-SPEED) (+ (invader-y I1) INVADER-Y-SPEED) 1)
-                                                                      (make-invader (- 150 INVADER-X-SPEED) (- 200 INVADER-Y-SPEED) -1)))
+                                                                      (make-invader (- 150 INVADER-X-SPEED) (+ 200 INVADER-Y-SPEED) -1)))
                             
-(check-expect (advance-invaders (list I1 I2 I3)) (list
+(check-expect (advance-invaders (list I1 I3)) (list
                                                   (make-invader (+ (invader-x I1) INVADER-X-SPEED) (+ (invader-y I1) INVADER-Y-SPEED) (invader-dir I1))
                                                   (make-invader (+ (invader-x I3) INVADER-X-SPEED) (+ (invader-y I3) INVADER-Y-SPEED) (invader-dir I3))))
 #;
@@ -223,6 +216,35 @@
         [else
          (cons (move-invader (first loi))
                          (advance-invaders (rest loi)))]))
+
+;; ======================================================
+;; Spawn Invaders
+;; ======================================================
+;; ListOfInvaders -> ListOfInvaders
+;; add invaders to ListOfInvaders randomly at y coordinate 0 and x position random between [0,WIDTH]
+
+#;
+(define (spawn-invaders loi) loi)
+
+(define (spawn-invaders loi)
+  (cond [(< (random 200) INVADE-RATE)
+         (cons (make-invader (random WIDTH) 0 (spawn-direction 1)) loi)]
+        [else loi]))
+
+
+;; ======================================================
+;; Spawn Direction
+;; ======================================================
+;; Integer -> Integer
+;; produce -1 if (random INVADE-RATE) is odd, else 1
+
+#;
+(define (spawn-direction i) 1)
+
+(define (spawn-direction i)
+  (if (odd? (random INVADE-RATE))
+        (- i)
+        i))
 
 ;; ======================================================
 ;; Move Invader
@@ -244,7 +266,7 @@
 
 
 ;; ======================================================
-;; Move Invader
+;; Rotate Invader
 ;; ======================================================
 ;; Invader -> Bool
 ;; rotate invader direction if (invader-x)  < 0 or > WIDTH
@@ -268,7 +290,8 @@
 
 ;; ListOfMissiles -> ListOfMissiles
 ;; advance every missile in ListOfMissiles by subtracting MISSILE-SPEED from (missile-y)
-;; !!!
+(check-expect (advance-missiles empty) empty)
+(check-expect (advance-missiles (list M1)) (list (make-missile (missile-x M1) (- (missile-x M1) MISSILE-SPEED))))
 
 (define (advance-missiles m) LOM0)
 
