@@ -298,6 +298,9 @@
 (check-expect (advance-missiles (list M1 M4 M5)) (list (make-missile (missile-x M1) (- (missile-y M1) MISSILE-SPEED))
                                                        (make-missile (missile-x M4) (- (missile-y M4) MISSILE-SPEED)) 
                                                        (make-missile (missile-x M5) (- (missile-y M5) MISSILE-SPEED))))
+
+(check-expect (advance-missiles (list (make-missile 100 -1))) empty)
+(check-expect (advance-missiles (list (make-missile 3 -1) (make-missile 45 200))) (list (make-missile 45 (- 200 MISSILE-SPEED))))
 #;
 (define (advance-missiles m) LOM0)
 
@@ -305,8 +308,10 @@
 (define (advance-missiles lom)
   (cond [(empty? lom) empty]
         [else
+          (if (< (missile-y (first lom)) 0)
+            (advance-missiles (rest lom))
          (cons (move-missile (first lom))
-                         (advance-missiles (rest lom)))]))
+                         (advance-missiles (rest lom))))]))
 
 ;; Missile -> Missile
 ;; advance a single missile by MISSILE-SPEED
@@ -340,8 +345,8 @@
 ;;                                        |
 ;; l   empty                              |  LOI
 ;; o                         --  empty  -----------------
-;; m  (cons missile LOM)                  |  (and <firsts are at (x,y)?>
-;;                                        |       <rests are at (x,y)?>)
+;; m  (cons missile LOM)                  |  (and <invader at (x,y)?>
+;;                                        |       <missile at (x,y)?>)
 
 (define (kill-invaders loi lom)
   (cond [(empty? loi) empty]
