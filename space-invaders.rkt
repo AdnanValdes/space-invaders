@@ -376,10 +376,23 @@
 
 
 ;; Tank -> Tank
-;; update tank position l(eft) or r(ight) by TANK-SPEED based on direction (tank-dir)
-;; !!!
+;; update tank position in box [0,WIDTH] l(eft) or r(ight) by TANK-SPEED based on direction (tank-dir)
+(check-expect (move-tank T0) (make-tank (+ (tank-x T0) TANK-SPEED) (tank-dir T0)))
+(check-expect (move-tank T2) (make-tank (- (tank-x T2) TANK-SPEED) (tank-dir T2)))
 
+(check-expect (move-tank (make-tank -1 -1)) (make-tank 0 -1))
+(check-expect (move-tank (make-tank (+ WIDTH 1) 1)) (make-tank WIDTH 1))
+
+#;
 (define (move-tank t) T0)
+
+
+(define (move-tank t)
+  (cond [(> (tank-x t) WIDTH) (make-tank WIDTH 1)]
+        [(< (tank-x t) 0) (make-tank 0 -1)]
+        [else
+          (make-tank (+ (tank-x t) (* (tank-dir t) TANK-SPEED)) (tank-dir t))]))
+
 
 ;; Game KeyEvent -> Game
 ;; handle key events. Left and right arrow keys move tank in box [0,WIDTH]. Spacebar is used to fire missile.
