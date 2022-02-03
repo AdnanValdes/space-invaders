@@ -229,27 +229,38 @@
 ;; ======================================================
 ;; Invader -> Invader
 ;; move a single invader by (-)INVADER-X-SPEED along x axis and INVADER-Y-SPEED along y axis
-(check-expect (move-invader I1) (make-invader (+ (invader-x I1) INVADER-X-SPEED) (- (invader-y I1) INVADER-Y-SPEED) 1))
-(check-expect (move-invader (make-invader 150 200 -1)) (make-invader (- 150 INVADER-X-SPEED) (- 200 INVADER-Y-SPEED) -1))
+(check-expect (move-invader I1) (make-invader (+ (invader-x I1) INVADER-X-SPEED) (+ (invader-y I1) INVADER-Y-SPEED) 1))
+(check-expect (move-invader (make-invader 150 200 -1)) (make-invader (- 150 INVADER-X-SPEED) (+ 200 INVADER-Y-SPEED) -1))
 
 #;
 (define (move-invader i) i)
 
 (define (move-invader invader)
-  (if (rotate-invader? invader)
+  (if (> 0 (invader-dir invader))     
       (make-invader
-       (+ (* -1 INVADER-X-SPEED) (invader-x invader)) (- (invader-y invader) INVADER-Y-SPEED) (* -1 (invader-dir invader)))
+       (+ (invader-x invader) (- INVADER-X-SPEED)) (+ (invader-y invader) INVADER-Y-SPEED)  (* (rotate-invader? invader) (invader-dir invader)))
       (make-invader 
-       (+ INVADER-X-SPEED (invader-x invader)) (- (invader-y invader) INVADER-Y-SPEED) (invader-dir invader))))
+       (+ (invader-x invader)    INVADER-X-SPEED)  (+ (invader-y invader) INVADER-Y-SPEED)  (* (rotate-invader? invader) (invader-dir invader)))))
+
 
 ;; ======================================================
 ;; Move Invader
 ;; ======================================================
 ;; Invader -> Bool
-;; rotate invader direction if (+/- (invader-x) INVADER-X-SPEED)  < 0 or > WIDTH
-(check-expect (rotate-invader (make-invader 
+;; rotate invader direction if (invader-x)  < 0 or > WIDTH
+(check-expect (rotate-invader? (make-invader 150 200 -1)) 1)
+(check-expect (rotate-invader? (make-invader 230 345 -1)) 1)
+(check-expect (rotate-invader? (make-invader 301 100 1)) -1)
+(check-expect (rotate-invader? (make-invader -1 5 -1))   -1)
 
+#;
 (define (rotate-invader? i) false)
+
+(define (rotate-invader? invader)
+    (if (or (< (invader-x invader) 0)
+        (> (invader-x invader) WIDTH))
+        -1
+        1))
 
 ;; ======================================================
 ;; Advance Missiles
