@@ -20,7 +20,7 @@
 
 (define HIT-RANGE 10)
 
-(define INVADE-RATE 100)
+(define INVADE-RATE 2)
 
 (define BACKGROUND (empty-scene WIDTH HEIGHT))
 
@@ -37,6 +37,7 @@
                      (rectangle 20 10 "solid" "black"))))   ;main body
 
 (define TANK-HEIGHT/2 (/ (image-height TANK) 2))
+(define TANK-Y (- HEIGHT TANK-HEIGHT/2))
 
 (define MISSILE (ellipse 5 15 "solid" "red"))
 
@@ -441,6 +442,58 @@
 
 ;; Game -> Image
 ;; render current game state by producing next alien, missile, and tank positions
-;; !!!
-
+(check-expect (render G0) (place-image TANK (tank-x (game-tank G0)) TANK-Y BACKGROUND))
+(check-expect (render G1) (place-image TANK (tank-x (game-tank G1)) TANK-Y BACKGROUND))
+(check-expect (render G2) (place-image TANK (tank-x (game-tank G2)) TANK-Y 
+                                       (place-image MISSILE (missile-x (first (game-missiles G2))) (missile-y (first (game-missiles G2))) 
+                                                    (place-image INVADER (invader-x (first (game-invaders G2))) (invader-y (first (game-invaders G2))) BACKGROUND))))
+(check-expect (render G3) (place-image TANK (tank-x (game-tank G3)) TANK-Y 
+                                       (place-image MISSILE (missile-x (first (game-missiles G3))) (missile-y (first (game-missiles G3)))
+                                                    (place-image MISSILE (missile-x (first (rest (game-missiles G3)))) (missile-y (first (rest (game-missiles G3))))
+                                                                 (place-image INVADER (invader-x (first (game-invaders G3))) (invader-y (first (game-invaders G3))) 
+                                                                              (place-image INVADER (invader-x (first (rest (game-invaders G3)))) (invader-y (first (rest (game-invaders G3)))) BACKGROUND))))))
+#;
 (define (render game) BACKGROUND)
+
+(define (render s)
+  (render-missiles (game-missiles s)
+                    (render-invaders (game-invaders s)
+                                    (render-tank (game-tank s)))))
+
+
+;; ListOfInvaders -> Image
+;; Render every invader in ListOfInvader
+#;
+(define (render-invaders loi img) INVADER)
+
+(define (render-invaders loi img)
+  (cond [(empty? loi) img]
+        [else
+         (place-image INVADER
+                      (invader-x (first loi))
+                      (invader-y (first loi))
+                        (render-invaders (rest loi) img))]))
+
+;; ListOfMissiles -> Image
+;; Render every missile in ListOfMissiles
+#;
+(define (render-missiles lom img) MISSILE)
+
+(define (render-missiles lom img)
+  (cond [(empty? lom) img]
+        [else
+         (place-image MISSILE
+                      (missile-x (first lom))
+                      (missile-y (first lom))
+                         (render-missiles (rest lom) img))]))
+;; Tank -> Image
+;; Render tank at position x
+
+#;
+(define (render-tank t) TANK)
+
+(define (render-tank t)
+  (place-image TANK
+               (tank-x t)
+               TANK-Y
+               BACKGROUND))
