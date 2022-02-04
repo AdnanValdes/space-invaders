@@ -398,10 +398,46 @@
 ;; handle key events. Left and right arrow keys move tank in box [0,WIDTH]. Spacebar is used to fire missile.
 ;; !!!
 
-(define (handle-key game ke)
-  (cond [(key=? ke " ") (... game)]
-        [else 
-         (... game)]))
+(define (handle-key s ke)
+  (cond [(key=? ke " ") (make-game (game-invaders s) (fire-missile (game-missiles s) (game-tank s)) (game-tank s))]
+        [(key=? ke "right") (make-game (game-invaders s) (game-missiles s) (go-right (game-tank s)))]
+        [(key=? ke "left") (make-game (game-invaders s) (game-missiles s) (go-left (game-tank s)))]
+        [else s]))
+
+;; ListOfMissiles Tank -> ListOfMissiles
+;; fire a missile from Tank-x position
+(check-expect (fire-missile empty T0) (list (make-missile (tank-x T0) TANK-HEIGHT/2)))
+(check-expect (fire-missile LOM1 T1) (cons (make-missile (tank-x T1) TANK-HEIGHT/2) LOM1))
+
+#;
+(define (fire-missile lom t) LOM1)
+
+(define (fire-missile lom t)
+  (cond [(empty? lom) (list (make-missile (tank-x t) TANK-HEIGHT/2))]
+        [else
+         (cons (make-missile (tank-x t) TANK-HEIGHT/2) lom)]))
+
+;; Tank -> Tank
+;; set tank direction to 1 (moving right)
+(check-expect (go-right (make-tank 10  1)) (make-tank 10 1))
+(check-expect (go-right (make-tank 50 -1)) (make-tank 50 1))
+
+#;
+(define (go-right t) t)
+
+(define (go-right t)
+  (make-tank (tank-x t) 1))
+
+;; Tank -> Tank
+;; set tank direction to -1 (moving left)
+(check-expect (go-left (make-tank 10 -1)) (make-tank 10 -1))
+(check-expect (go-left (make-tank 50  1)) (make-tank 50 -1))
+
+#;
+(define (go-left t) t)
+
+(define (go-left t)
+  (make-tank (tank-x t) -1))
 
 ;; Game -> Image
 ;; render current game state by producing next alien, missile, and tank positions
