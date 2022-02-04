@@ -332,9 +332,9 @@
 ;; ListOfMissiles ListOfInvaders -> ListOfInvaders
 ;; given a list of missiles and a list of invaders, remove invaders and missiles that collide
 (check-expect (kill-invaders empty empty) empty)
-(check-expect (kill-invaders LOI3 empty) LOI3)
-(check-expect (kill-invaders empty LOM1) empty)
-(check-expect (kill-invaders (list (make-invader 150 100 1)) (list (make-missile 150 100))) empty) ; Exact hit on single invader
+(check-expect (kill-invaders empty LOI3) LOI3)
+(check-expect (kill-invaders LOM1 empty) empty)
+(check-expect (kill-invaders (list (make-missile 150 100)) (list (make-invader 150 100 1))) empty) ; Exact hit on single invader
 
 #;
 (define (kill-invaders loi lom) loi)
@@ -349,13 +349,13 @@
 ;; m  (cons missile LOM)                  |  (and <invader at (x,y)?>
 ;;                                        |       <missile at (x,y)?>)
 
-(define (kill-invaders loi lom)
+(define (kill-invaders lom loi)
   (cond [(empty? loi) empty]
         [(empty? lom) loi]
         [else
          (if (hit-invader? (first loi) lom)
-             (rest loi)
-             (cons (first loi) (kill-invaders (rest loi) lom)))]))
+            (rest loi)
+             (cons (first loi) (kill-invaders lom (rest loi))))]))
 
 
 ;; Invader ListOfMissile -> Bool
