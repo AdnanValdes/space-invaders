@@ -407,16 +407,16 @@
 
 ;; ListOfMissiles Tank -> ListOfMissiles
 ;; fire a missile from Tank-x position
-(check-expect (fire-missile empty T0) (list (make-missile (tank-x T0) TANK-HEIGHT/2)))
-(check-expect (fire-missile LOM1 T1) (cons (make-missile (tank-x T1) TANK-HEIGHT/2) LOM1))
+(check-expect (fire-missile empty T0) (list (make-missile (tank-x T0) TANK-Y)))
+(check-expect (fire-missile LOM1 T1) (cons (make-missile (tank-x T1) TANK-Y) LOM1))
 
 #;
 (define (fire-missile lom t) LOM1)
 
 (define (fire-missile lom t)
-  (cond [(empty? lom) (list (make-missile (tank-x t) TANK-HEIGHT/2))]
+  (cond [(empty? lom) (list (make-missile (tank-x t) TANK-Y))]
         [else
-         (cons (make-missile (tank-x t) TANK-HEIGHT/2) lom)]))
+         (cons (make-missile (tank-x t) TANK-Y) lom)]))
 
 ;; Tank -> Tank
 ;; set tank direction to 1 (moving right)
