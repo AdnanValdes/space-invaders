@@ -6,9 +6,9 @@
 
 ;; Space Invaders
 
-
+;; ======================================================
 ;; Constants:
-;; =================
+
 
 (define WIDTH  300)
 (define HEIGHT 500)
@@ -42,9 +42,9 @@
 (define MISSILE (ellipse 5 15 "solid" "red"))
 
 
-
+;; ======================================================
 ;; Data Definitions:
-;; =================
+
 
 (define-struct game (invaders missiles tank))
 ;; Game is (make-game  (listof Invader) (listof Missile) Tank)
@@ -160,9 +160,9 @@
 ;; - compound: (list missile ListOfMissile)
 ;; - reference: (first loi) is missile
 
-
+;; ======================================================
 ;; Functions:
-;; =================
+
 
 ;; ======================================================
 ;; Main
@@ -179,7 +179,7 @@
     ))   
 
 ;; ======================================================
-;; Update Game
+;; Game State
 ;; ======================================================
 
 ;; Game -> Game
@@ -195,7 +195,7 @@
              (move-tank (game-tank s))))
 
 ;; ======================================================
-;; Advance Invaders
+;; Invader Handlers
 ;; ======================================================
 
 ;; ListOfInvaders -> ListOfInvaders
@@ -221,9 +221,7 @@
          (cons (move-invader (first loi))
                          (advance-invaders (rest loi)))]))
 
-;; ======================================================
-;; Spawn Invaders
-;; ======================================================
+
 ;; ListOfInvaders -> ListOfInvaders
 ;; add invaders to ListOfInvaders randomly at y coordinate 0 and x position random between [0,WIDTH]
 
@@ -236,9 +234,7 @@
         [else loi]))
 
 
-;; ======================================================
-;; Spawn Direction
-;; ======================================================
+
 ;; Integer -> Integer
 ;; produce -1 if (random INVADE-RATE) is odd, else 1
 
@@ -250,46 +246,42 @@
         (- i)
         i))
 
-;; ======================================================
-;; Move Invader
-;; ======================================================
+
 ;; Invader -> Invader
 ;; move a single invader by (-)INVADER-X-SPEED along x axis and INVADER-Y-SPEED along y axis
 (check-expect (move-invader I1) (make-invader (+ (invader-x I1) INVADER-X-SPEED) (+ (invader-y I1) INVADER-Y-SPEED) 1))
 (check-expect (move-invader (make-invader 150 200 -1)) (make-invader (- 150 INVADER-X-SPEED) (+ 200 INVADER-Y-SPEED) -1))
+(check-expect (move-invader (make-invader 0 200 -1)) (make-invader (+ 0 INVADER-X-SPEED) (+ 200 INVADER-Y-SPEED) 1))
 
 #;
 (define (move-invader i) i)
 
-(define (move-invader invader)
-  (if (> 0 (invader-dir invader))     
-      (make-invader
-       (+ (invader-x invader) (- INVADER-X-SPEED)) (+ (invader-y invader) INVADER-Y-SPEED)  (* (rotate-invader? invader) (invader-dir invader)))
-      (make-invader 
-       (+ (invader-x invader)    INVADER-X-SPEED)  (+ (invader-y invader) INVADER-Y-SPEED)  (* (rotate-invader? invader) (invader-dir invader)))))
+(define (move-invader i)
+  (if (rotate-invader? i)
+      (cond [(= (invader-dir i) 1) (make-invader (+ (invader-x i) (- INVADER-X-SPEED)) (+ (invader-y i) INVADER-Y-SPEED) -1)]
+            [else
+             (make-invader (+ (invader-x i)    INVADER-X-SPEED)  (+ (invader-y i) INVADER-Y-SPEED)  1)])
+      (cond [(= (invader-dir i) 1) (make-invader (+ (invader-x i)    INVADER-X-SPEED)  (+ (invader-y i) INVADER-Y-SPEED)  1)]
+            [else
+             (make-invader (+ (invader-x i)    (- INVADER-X-SPEED))  (+ (invader-y i) INVADER-Y-SPEED)  -1)])))
 
 
-;; ======================================================
-;; Rotate Invader
-;; ======================================================
 ;; Invader -> Bool
 ;; rotate invader direction if (invader-x)  < 0 or > WIDTH
-(check-expect (rotate-invader? (make-invader 150 200 -1)) 1)
-(check-expect (rotate-invader? (make-invader 230 345 -1)) 1)
-(check-expect (rotate-invader? (make-invader 301 100 1)) -1)
-(check-expect (rotate-invader? (make-invader -1 5 -1))   -1)
+(check-expect (rotate-invader? (make-invader 150 200 -1)) false)
+(check-expect (rotate-invader? (make-invader 230 345 -1)) false)
+(check-expect (rotate-invader? (make-invader 300 100  1))  true)
+(check-expect (rotate-invader? (make-invader   0   5 -1))  true)
 
 #;
 (define (rotate-invader? i) false)
 
 (define (rotate-invader? invader)
-    (if (or (< (invader-x invader) 0)
-        (> (invader-x invader) WIDTH))
-        -1
-        1))
+    (or (< (invader-x invader) 1)
+        (> (invader-x invader) (- WIDTH 1))))
 
 ;; ======================================================
-;; Advance Missiles
+;; Missile Handlers
 ;; ======================================================
 
 ;; ListOfMissiles -> ListOfMissiles
@@ -326,7 +318,7 @@
 
 
 ;; ======================================================
-;; Kill Invaders
+;; Collision Handler
 ;; ======================================================
 
 ;; ListOfMissiles ListOfInvaders -> ListOfInvaders
@@ -374,36 +366,27 @@
                 true
                 (hit-invader? invader (rest lom)))]))
 
-
+;; ======================================================
+;; Tank Handlers
+;; ======================================================
 
 ;; Tank -> Tank
 ;; update tank position in box [0,WIDTH] l(eft) or r(ight) by TANK-SPEED based on direction (tank-dir)
 (check-expect (move-tank T0) (make-tank (+ (tank-x T0) TANK-SPEED) (tank-dir T0)))
 (check-expect (move-tank T2) (make-tank (- (tank-x T2) TANK-SPEED) (tank-dir T2)))
 
-(check-expect (move-tank (make-tank -1 -1)) (make-tank 0 -1))
-(check-expect (move-tank (make-tank (+ WIDTH 1) 1)) (make-tank WIDTH 1))
+(check-expect (move-tank (make-tank -1 -1)) (make-tank 0 0))
+(check-expect (move-tank (make-tank (+ WIDTH 1) 1)) (make-tank WIDTH 0))
 
 #;
 (define (move-tank t) T0)
 
 
 (define (move-tank t)
-  (cond [(> (tank-x t) WIDTH) (make-tank WIDTH 1)]
-        [(< (tank-x t) 0) (make-tank 0 -1)]
+  (cond [(> (tank-x t) WIDTH) (make-tank WIDTH 0)]
+        [(< (tank-x t) 0) (make-tank 0 0)]
         [else
           (make-tank (+ (tank-x t) (* (tank-dir t) TANK-SPEED)) (tank-dir t))]))
-
-
-;; Game KeyEvent -> Game
-;; handle key events. Left and right arrow keys move tank in box [0,WIDTH]. Spacebar is used to fire missile.
-;; !!!
-
-(define (handle-key s ke)
-  (cond [(key=? ke " ") (make-game (game-invaders s) (fire-missile (game-missiles s) (game-tank s)) (game-tank s))]
-        [(key=? ke "right") (make-game (game-invaders s) (game-missiles s) (go-right (game-tank s)))]
-        [(key=? ke "left") (make-game (game-invaders s) (game-missiles s) (go-left (game-tank s)))]
-        [else s]))
 
 ;; ListOfMissiles Tank -> ListOfMissiles
 ;; fire a missile from Tank-x position
@@ -439,6 +422,21 @@
 
 (define (go-left t)
   (make-tank (tank-x t) -1))
+
+
+;; Game KeyEvent -> Game
+;; handle key events. Left and right arrow keys move tank in box [0,WIDTH]. Spacebar is used to fire missile.
+;; !!!
+
+(define (handle-key s ke)
+  (cond [(key=? ke " ") (make-game (game-invaders s) (fire-missile (game-missiles s) (game-tank s)) (game-tank s))]
+        [(key=? ke "right") (make-game (game-invaders s) (game-missiles s) (go-right (game-tank s)))]
+        [(key=? ke "left") (make-game (game-invaders s) (game-missiles s) (go-left (game-tank s)))]
+        [else s]))
+
+;; ======================================================
+;; Image Handlers
+;; ======================================================
 
 ;; Game -> Image
 ;; render current game state by producing next alien, missile, and tank positions
