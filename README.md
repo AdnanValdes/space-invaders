@@ -1,5 +1,5 @@
 # Space Invaders BSL    
-A simple version of Space Invaders written in Racket BSL. This program is the final project for UBCx's    HtC1x, the first module of their [Software Development MicroMasters](https://www.edx.org/micromasters/    ubcx-software-development) program on edX.
+A simple version of Space Invaders written in Racket BSL. This program is the final project for UBCx's    HtC1x, the first module of their [Software Development MicroMasters](https://www.edx.org/micromasters/ubcx-software-development) program on edX.
     
 ## Usage    
     
