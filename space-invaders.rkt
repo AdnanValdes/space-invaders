@@ -15,7 +15,7 @@
 
 (define INVADER-X-SPEED 1.5)  ;speeds (not velocities) in pixels per tick
 (define INVADER-Y-SPEED 1.5)
-(define TANK-SPEED 2)
+(define TANK-SPEED 3)
 (define MISSILE-SPEED 10)
 
 (define HIT-RANGE 10)
@@ -163,7 +163,6 @@
 ;; ======================================================
 ;; Functions:
 
-
 ;; ======================================================
 ;; Main
 ;; ======================================================
@@ -172,10 +171,11 @@
 ;; start the world with (main G0).
 
 (define (main g)
-  (big-bang g                  ; Game
-    (on-tick    update-game) ; Game -> Game
-    (on-key     handle-key)    ; Game KeyEvent -> Game
-    (to-draw    render)        ; Game -> Image
+  (big-bang g                         ; Game
+    (on-tick    update-game)          ; Game -> Game
+    (on-key     handle-key)           ; Game KeyEvent -> Game
+    (to-draw    render)               ; Game -> Image
+    (stop-when  game-over end-scene) ; Game -> Bool
     ))   
 
 ;; ======================================================
@@ -434,6 +434,33 @@
         [(key=? ke "left") (make-game (game-invaders s) (game-missiles s) (go-left (game-tank s)))]
         [else s]))
 
+;; ======================================================
+;; End Game Handler
+;; ======================================================
+
+;; Game -> Bool
+;; produce true to end game if any invader lands
+;;!!!
+#;
+(define (game-over g) false)
+
+(define (game-over g)
+  (cond [(empty? (game-invaders g)) false]
+        [else (landed? (game-invaders g))]))
+
+#;
+(define (landed? g) false)
+
+(define (landed? loi)
+  (cond [(empty? loi) false]
+        [else
+         (if (> (invader-y (first loi)) HEIGHT)
+             true
+             (landed? (rest loi)))]))
+
+
+(define (end-scene g)
+  (place-image (text "GAME OVER" 24 "olive") (/ WIDTH 2) (/ HEIGHT 2) (render g)))
 ;; ======================================================
 ;; Image Handlers
 ;; ======================================================
