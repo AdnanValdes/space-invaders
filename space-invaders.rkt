@@ -522,3 +522,5 @@
                (tank-x t)
                TANK-Y
                BACKGROUND))
+
+(main G0)
